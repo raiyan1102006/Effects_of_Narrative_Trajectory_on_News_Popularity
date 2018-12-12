@@ -1,16 +1,10 @@
 # Effects_of_Narrative_Trajectory_on_News_Popularity
-Analyzing how narrative trajectories of online news articles influence their popularities
+This repository holds the companion code for the project "Understanding the Effects of Narrative Trajectories on the Popularities of Online News Articles". 
 
-
-######
-README 
-######
-
-Companion code for the project "Awe the Reader: How Narrative Trajectories Affect Popularities of Online Articles".
 Author: Raiyan Abdul Baten (rbaten@ur.rochester.edu)
 
 
-INSTALLATION INSTRUCTIONS
+## INSTALLATION INSTRUCTIONS
 =========================
 
 This program is created and tested in Python 3.6.3.
@@ -25,7 +19,7 @@ pip install bs4
 pip install --upgrade watson-developer-cloud
 
 
-USAGE INSTRUCTIONS
+## USAGE INSTRUCTIONS
 ==================
 
 1. Article content scraping [OPTIONAL]:
