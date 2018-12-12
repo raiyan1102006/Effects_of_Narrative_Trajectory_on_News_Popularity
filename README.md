@@ -8,13 +8,19 @@ Author: Raiyan Abdul Baten (rbaten@ur.rochester.edu)
 This program is created and tested in Python 3.6.3.
 
 1. Install the basic requirements:
+```
 pip install -r requirements.txt
+```
 
 2. Install BeautifulSoup for scraping the mashable website:
+```
 pip install bs4
+```
 
 3. Install IBM Watson Developer Cloud to extract the sentence-wise tones:
+```
 pip install --upgrade watson-developer-cloud
+```
 
 
 ## Usage Instructions
