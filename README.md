@@ -1,0 +1,2 @@
+# Effects_of_Narrative_Trajectory_on_News_Popularity
+Analyzing how narrative trajectories of online news articles influence their popularities
