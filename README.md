@@ -1,10 +1,10 @@
-# Effects_of_Narrative_Trajectory_on_News_Popularity
+# Effects of Narrative Trajectories on the Popularities of Online News Articles
 This repository holds the companion code for the project "Understanding the Effects of Narrative Trajectories on the Popularities of Online News Articles". 
 
 Author: Raiyan Abdul Baten (rbaten@ur.rochester.edu)
 
 
-## INSTALLATION INSTRUCTIONS
+## Installation Instructions
 This program is created and tested in Python 3.6.3.
 
 1. Install the basic requirements:
@@ -17,7 +17,7 @@ pip install bs4
 pip install --upgrade watson-developer-cloud
 
 
-## USAGE INSTRUCTIONS
+## Usage Instructions
 1. Article content scraping [OPTIONAL]:
 The fetch_article_content.py file scrapes the mashable website to collect the article contents of the urls given in the original dataset. It saves all the files to the folder article_content_data. However, this operation is lengthy (takes more than 11 hours) and memory intensive (~90 MB). I have kept just the first two scraped articles in the folder as examples.
 
