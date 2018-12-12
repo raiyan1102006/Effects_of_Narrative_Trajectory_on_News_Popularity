@@ -5,8 +5,6 @@ Author: Raiyan Abdul Baten (rbaten@ur.rochester.edu)
 
 
 ## INSTALLATION INSTRUCTIONS
-=========================
-
 This program is created and tested in Python 3.6.3.
 
 1. Install the basic requirements:
@@ -20,8 +18,6 @@ pip install --upgrade watson-developer-cloud
 
 
 ## USAGE INSTRUCTIONS
-==================
-
 1. Article content scraping [OPTIONAL]:
 The fetch_article_content.py file scrapes the mashable website to collect the article contents of the urls given in the original dataset. It saves all the files to the folder article_content_data. However, this operation is lengthy (takes more than 11 hours) and memory intensive (~90 MB). I have kept just the first two scraped articles in the folder as examples.
 
