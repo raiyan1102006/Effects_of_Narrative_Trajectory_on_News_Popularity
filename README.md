@@ -33,7 +33,7 @@ The fetch_bluemix_tones.py script sends the articles to the IBM Watson API, rece
 3. Analysis:
 The file analysis.py loads the information from the pickle files and performs all the clustering operations and statistical tests. It prints the bonferroni corrected ttest results on the terminal.
 
-## REFERENCES
+## Reference
 I borrowed functions from the codebase of the following paper:
 
 M Iftekhar Tanveer, Samiha Samrose, Raiyan Abdul Baten, and M Ehsan Hoque. 2018. Awe the Audience: How the Narrative Trajectories Affect Audience Perception in Public Speaking. In Proceedings of the 2018 CHI Conference on Human Factors in Computing Systems. ACM, 24.
