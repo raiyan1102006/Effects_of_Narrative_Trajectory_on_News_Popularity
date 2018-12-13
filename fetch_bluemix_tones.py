@@ -10,11 +10,13 @@ nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 from bluemix_key import *
 
-
+#loads csv data
 def load_csv_data(folder_name, file_name):
     csv_path = os.path.join(folder_name, file_name+".csv")
     return pd.read_csv(csv_path, encoding='latin-1')
 
+
+# This function makes the calls to IBM Watson API, receives the tone data, and saves to pickle files
 def fetch_bluemix_data(dataframe,start_idx,end_idx):
 
 	for index, row in dataframe[start_idx:end_idx].iterrows():
@@ -32,10 +34,10 @@ def fetch_bluemix_data(dataframe,start_idx,end_idx):
 	        print("skipped article #"+str(index))
 	        continue
 	    
-	    #analyze text from bluemix
+	    # fetch tone information from bluemix
 	    temp_count=0
 	    fail_flag=0
-	    while True:
+	    while True: #sometimes the API crashes. This loop tries for upto 5 times to get a valid API response
 	        try:
 	            tone_analysis = tone_analyzer.tone({'text': text},'application/json').get_result()
 	        except:

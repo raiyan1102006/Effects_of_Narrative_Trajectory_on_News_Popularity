@@ -17,11 +17,12 @@ import operator as op
 from functools import reduce
 from collections import OrderedDict
 
+#loads csv data
 def load_csv_data(folder_name, file_name):
     csv_path = os.path.join(folder_name, file_name+".csv")
     return pd.read_csv(csv_path)
 
-
+#helps with combination calculation 
 def count_n_choose_r(n,r):
     r = min(r, n-r)
     if r == 0: return 1
@@ -29,8 +30,8 @@ def count_n_choose_r(n,r):
     denom = reduce(op.mul, range(1, r+1))
     return numer//denom
 
+# this function helps in drawing boxplots
 def draw_boxplots(pvals,allvals,s,comparator,outfilename=None):
-    # Draw the box plot for Totalviews first
     for akw in pvals:
         plt.figure(comparator.column_names[s]+akw)
         ax=plt.boxplot(allvals[akw],
@@ -46,6 +47,7 @@ def draw_boxplots(pvals,allvals,s,comparator,outfilename=None):
                 comparator.column_names[s]+'_'+akw+'.eps')
             plt.close()
 
+
 def decorate_axis(c,cols,rows,yval,avg_yval,txtlist,legendval,fig,
         toff=0.03,boff=0.015,loff=0.02,midoff=0.03,roff=0.005,txth=0.18):
     irow = c / cols
@@ -59,7 +61,7 @@ def decorate_axis(c,cols,rows,yval,avg_yval,txtlist,legendval,fig,
     txtaxbottom = boff+irow*cellh+midoff/2.
     # Position the axes
     ax = fig.add_axes([axleft,axbottom,axw,axh])
-    # Draw the average and the top 20 similar talks
+    
     ax.plot(yval,color='gray',linewidth=0.5)
     ax.plot(avg_yval,color='orange',\
         linewidth=2,label=legendval)
@@ -74,14 +76,11 @@ def decorate_axis(c,cols,rows,yval,avg_yval,txtlist,legendval,fig,
     for i,txt in enumerate(txtlist):
         txtax.text(0,1 - txth*(i+1),str(i+1)+'. '+txt)
 
+#Draws the cluster means and its closest-matching talks.
 
 def draw_clusters_pretty(avg_dict,comp,csvcontent,vid_idx,
     b_=None,outfilename=None):
-    '''
-    Draws the cluster means and its closest-matching talks.
-    avg_dict is a dictionary containing cluster means for various scores.
-    comp is the sentiment comparator object
-    '''
+
     X = np.array([comp.sentiments_interp[an_article] for an_article in comp.allarticles])
     M = np.size(X,axis=1)
     colidx = {col:i for i,col in enumerate(comp.column_names)}
@@ -97,8 +96,12 @@ def draw_clusters_pretty(avg_dict,comp,csvcontent,vid_idx,
         nb_clust = len(avg_dict[ascore].keys())
         rows = int(np.ceil(nb_clust/3.))
         cols = 3
-        print(ascore)
+        print(" ")
         print('######################')
+        print("Tone: "+str(ascore))
+        print('######################')
+        print(" ")
+        print("Generated clusters:")
         for c,aclust in enumerate(avg_dict[ascore]):
             # Standerdize X
             xmean = np.mean(X[:,:,b],axis=1)[None].T
@@ -115,7 +118,7 @@ def draw_clusters_pretty(avg_dict,comp,csvcontent,vid_idx,
             # Print the rating averages of the clusters
             f20vids=[vid_idx[comp.allarticles[idx]] for idx in simidx[:20]]
             print(aclust)
-            print('============')
+            
 
             # Draw the axes
             decorate_axis(c,cols,rows,yval,avg_yval,txtlist,aclust,fig)
@@ -126,19 +129,14 @@ def draw_clusters_pretty(avg_dict,comp,csvcontent,vid_idx,
             plt.savefig(outfilename+'clust_'+ascore+'.eps')
             plt.close()
 
-
+# performs clustering assuming there is only one sentiment score
 def clust_onescore_stand(X_1,clusterer,comparator):
-    '''
-    Similar to get_clust_dict. But it will performs clustering assuming there is
-    only one sentiment score. Practically it is equivalent to considering that 
-    X_1 is of order 2 (NxM), instead of 3 (NxMxB). In addition, it performs 
-    z-score standardization of the rows of X_1 (i.e. each talk).
-    '''
+    
     result_dict = {}
     mean_ = np.mean(X_1,axis=1)[None].T
     std_ = np.std(X_1,axis=1)[None].T
     Z = (X_1-mean_)
-    clusterer.fit(Z)
+    clusterer.fit(Z) #DBScan clusterer
     labls = clusterer.labels_
     for lab,articleid in zip(labls,comparator.allarticles):
         if result_dict.get('cluster_'+str(lab)):
@@ -147,18 +145,11 @@ def clust_onescore_stand(X_1,clusterer,comparator):
             result_dict['cluster_'+str(lab)]=[articleid]
     return result_dict
 
+# draws the cluster means and evaluate the differences in various clusters.
+# Then performs airwise multiple t-test with Bonferroni correction
 
 def evaluate_clust_separate_stand(X,clusterer,comparator,\
     csvcontent,csv_id,b_=None,outfilename=None):
-    '''
-    It draws the cluster means and evaluate the differences
-    in various clusters. It performs ANOVA to check if the 
-    clusters have any differences in their ratings
-    Edit: Now it also performs (Based on CHI Reviewer's recommendations)
-    1. ANOVA with Bonferroni correction
-    2. Pairwise multiple t-test with Bonferroni correction
-    3. Effectsize and direction of the clusters on the ratings
-    '''
     N,M,B = X.shape
     avg_dict = {}
     kwlist = ['shares']
@@ -187,6 +178,7 @@ def evaluate_clust_separate_stand(X,clusterer,comparator,\
         pvals = {}
         allvals = {}
         # Formulate a list of values for each rating
+        print(" ")
         print('='*50)
         print('{:^50}'.format('HYPOTHESIS TESTS'))
         print('{:^50}'.format('for IBM Score:'+comparator.column_names[s]))
@@ -212,9 +204,7 @@ def evaluate_clust_separate_stand(X,clusterer,comparator,\
                 else:
                     print('not significant')
             ########### Pair-wise t-test with correction ###########
-            # Skip totalviews, we are interested in ratings only
-            if akw == 'Totalviews':
-                continue
+           
             # Total number of repeated comparisons
             paircount = count_n_choose_r(len(ratvals),2)
             # Pair-wise comparison using t-test and effectsize
@@ -237,8 +227,7 @@ def evaluate_clust_separate_stand(X,clusterer,comparator,\
                         (n2-1)*(sd2**2.))/(n1+n2-2))
                     cohen_d = (np.mean(ratvals[rat1]) - \
                         np.mean(ratvals[rat2]))/sd_pooled
-                    print('Cohen\'s d of rating "'+akw+'" between '+rat1+\
-                        ' and '+rat2+': ',cohen_d)
+                    print('Cohen\'s d of rating "'+akw+'" : ',cohen_d)
         # If the clusters are significantly different in any rating, draw it
         if not pvals.keys():
             continue
@@ -267,23 +256,18 @@ def read_data(dataframe):
         i+=1      
     return content,vid_idx
 
+# Draw the cluster means and evaluate the differences in various clusters
 
 def evaluate_clusters(X,comp,dataframe,outfilename='./plots/'):
-    '''
-    Draw the cluster means and evaluate the differences in various
-    clusters. It performs an ANOVA test to check if the clusters have
-    any differences in their number of shares.
-    Note: before you call this function, you should get the arguments
-    (X and comp) using the following command: 
-    X,comp = load_all_scores()    
-    '''
-
-    km = DBSCAN(eps=.25)
+    
+    km = DBSCAN(eps=.25) #DBScan initialize
     content,vid_idx = read_data(dataframe)
     evaluate_clust_separate_stand(X,km,comp,content,vid_idx,outfilename=outfilename)
 
 
+# helps parsing the json sent from IBM
 def parse_tone_categories(tones_list):
+    #these are the various tones
     header=['anger', 'disgust', 'fear', 'joy', 'sadness', \
             'analytical', 'confident', 'tentative', \
             'openness_big5', 'conscientiousness_big5', 'extraversion_big5', 'agreeableness_big5', 'emotional_range_big5']
@@ -293,7 +277,7 @@ def parse_tone_categories(tones_list):
         scores[temp_index]=atone["score"]
     return header,scores
 
-
+#parses through the json sent from IBM
 def parse_sentence_tone(senttone_list):
     sentences=[]
     header=[]
@@ -310,11 +294,12 @@ def parse_sentence_tone(senttone_list):
     scores = np.array(scores)
     return scores,header,sentences
 
+
+# Reads all the sentences and their corresponding bluemix sentiments.
 def read_bluemix(pklfile,sentiment_dir='./bluemix_data/'):
-    '''
-    Reads all the sentences and their corresponding bluemix sentiments.
-    '''
+  
     pklfile = sentiment_dir+pklfile.split('/')[-1]
+    #make sure file is there
     assert os.path.isfile(pklfile),'File not found: '+pklfile
     assert os.path.isfile(pklfile),'Sentiment file not found: '+pklfile+\
         ' \nCheck the sentiment_dir argument'
@@ -324,6 +309,8 @@ def read_bluemix(pklfile,sentiment_dir='./bluemix_data/'):
     scores,header,sentences = parse_sentence_tone(data['sentences_tone'])
     return scores,header,sentences
 
+
+# class holds all the loaded information in self for easy navigation
 class Sentiment_Comparator(object):
     def __init__(self,
                 dict_groups,
@@ -339,19 +326,19 @@ class Sentiment_Comparator(object):
         self.back_ref={}
         self.column_names=[]
         if process:
-            self.extract_raw_sentiment()
-            self.smoothen_raw_sentiment()
-            self.intep_sentiment_series()
+            self.extract_raw_sentiment() #loads the tone information
+            self.smoothen_raw_sentiment() #smoothens them
+            self.intep_sentiment_series() #interpolates them
     
     def extract_raw_sentiment(self):
         for index,an_article in enumerate(self.allarticles):
-            filename = self.inputpath+str(an_article)+'.pkl'
+            filename = self.inputpath+str(an_article)+'.pkl' #the pickle file containing the tone info
             scores,header,_ = self.reader(filename)
             if index==0:
                 self.column_names = header
-            self.raw_sentiments[an_article] = scores
+            self.raw_sentiments[an_article] = scores #raw scores. This will be processed
     
-    def smoothen_raw_sentiment(self,kernelLen=2):
+    def smoothen_raw_sentiment(self,kernelLen=2): #using a kernel length of 2
         # Get number of columns in sentiment matrix 
         _,n = np.shape(self.raw_sentiments[self.allarticles[0]])
 
@@ -363,12 +350,12 @@ class Sentiment_Comparator(object):
                 np.ones(kernelLen)/float(kernelLen),mode='valid'))
             self.raw_sentiments[an_article]=np.array(temp).T
 
-    def intep_sentiment_series(self,bins=10):
+    def intep_sentiment_series(self,bins=10): #interpolating to a canonical length of 10
         '''
         Fills out the variable self.sentiments_interp. Different sentiment
-        series has different lengths due to the variable length of the talks.
+        series has different lengths due to the variable length of the articles.
         This function brings all the series in a common length (having 
-        10 samples). It also updates the backward reference (back_ref)
+        10 samples).
         '''        
         for an_article in self.allarticles:
             m,n = np.shape(self.raw_sentiments[an_article])
@@ -387,14 +374,7 @@ class Sentiment_Comparator(object):
                 np.interp(new_xvals,old_xvals,self.raw_sentiments[an_article][:,i])
                 
     def reform_groups(self,new_dict_groups):
-        '''
-        If it becomes necessary to re-group the data, this method
-        comes handy. It will restructure the object without loading
-        the data again from file (loading the data is time cosuming).
-        Note that the new_dict_groups dictionary must
-        contain all the talkids from the original dict_groups. No more,
-        no less. Only the group assignments are meant to be changed.
-        '''
+        
         self.groups = new_dict_groups
         self.raw_sentiments = {an_article:self.raw_sentiments[an_article] \
             for akey in new_dict_groups \
@@ -429,5 +409,4 @@ if __name__ == "__main__":
 
 	print("###### Performing cluster analysis ######")
 	evaluate_clusters(X,comp,df_data2,outfilename='./plots/')
-
 	print("###### Please check the plot folder for the results ######")

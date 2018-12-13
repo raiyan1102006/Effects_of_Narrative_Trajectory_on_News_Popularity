@@ -6,10 +6,13 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 
+
+#loads csv data
 def load_csv_data(folder_name, file_name):
     csv_path = os.path.join(folder_name, file_name+".csv")
     return pd.read_csv(csv_path, encoding='latin-1')
 
+#given a link, this function fetches the article, processes it and returns the text
 def fetch_content(link):
     text=""
     page = requests.get(link)
@@ -22,7 +25,7 @@ def fetch_content(link):
             return "failed children NoneType"
         for child in children[:-1]: #usually last entry holds credits info
             string = re.sub('<a.*?>|</a>', '', str(child)[3:-4]) # [3:-4] gets rid of the <p></p> tags
-            string = re.sub('<em.*?>|</em>', '', string)
+            string = re.sub('<em.*?>|</em>', '', string) #get rid of all the unwanted tags
             string = re.sub('<strong.*?>|</strong>', '', string)
             string = re.sub('<div.*?>|</div>', '', string)
             string = re.sub('<span.*?>|</span>', '', string)
@@ -44,7 +47,7 @@ if __name__ == "__main__":
 	df_data = load_csv_data("","onlinenewspopularity")
 	for index, row in df_data[:2].iterrows(): #change to df_data.iterrows() to generate complete article collection
 	    print("Fetching article #"+str(index)+": "+row["url"])
-	    file = open("article_content_data/"+str(index)+".txt","w") 
+	    file = open("article_content_data/"+str(index)+".txt","w") #save the text to a file
 	    file.write(fetch_content(row["url"])) 
 	    file.close() 
 
